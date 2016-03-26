@@ -7,7 +7,7 @@ white = (255, 255, 255)
 text_size = 26
 line_distance = 1
 console_height = height = 1070-(text_size+line_distance)
-
+console_width_characters = 28
 
 def is_character(char):
     return char < 256
@@ -47,8 +47,7 @@ class Console:
 
         n = 0
         for line in self.line_history:
-            n += 1
-            line.draw(n, screen)
+            n += line.draw(n, screen)
 
     def output_text(self, text, color):
         self.line_history.insert(0, Line(text, color))
@@ -63,6 +62,41 @@ class Line:
         self.text = text_in
 
     def draw(self, n, screen):
-        font = pygame.font.SysFont("mono", text_size)
-        s = font.render(self.text , False, self.color)
-        screen.blit(s, (10, console_height-(text_size+line_distance)*n))
+        lines = line_break(self.text)
+
+        line_count = len(lines)
+        for line in lines:
+            font = pygame.font.SysFont("mono", text_size)
+            s = font.render(line, False, self.color)
+            screen.blit(s, (10, console_height-(text_size+line_distance)*(n+line_count)))
+            line_count -= 1
+        return len(lines)
+
+
+def line_break(text):
+    return_lines = []
+    lines = text.split()
+    current_line = ""
+    current_length = 0
+    while lines:
+        line = lines.pop(0)
+        if len(line) > console_width_characters:
+            line_first_half = line[0:console_width_characters - current_length - 1] + "-"
+            line_second_half = line[console_width_characters - current_length - 1: -1]
+            lines.insert(0, line_second_half)
+            current_line += line_first_half
+            return_lines.append(current_line)
+            current_line = ""
+            current_length = 0
+        elif len(line) + current_length > console_width_characters:
+            lines.insert(0, line)
+            return_lines.append(current_line)
+            current_line = ""
+            current_length = 0
+        else:
+            current_line += line + " "
+            current_length += len(line)
+
+    if current_line != "":
+        return_lines.append(current_line)
+    return return_lines

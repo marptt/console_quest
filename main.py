@@ -19,13 +19,12 @@ class Game:
     def run(self):
         while not self.console.quit:
             self.console.update()
-            self.events.update()
-            for event in self.events.finshed_events:
+            for event in self.events.finished_events:
                 self.resolve_event(event)
-            self.events.finshed_events = []
+            self.events.finished_events = []
 
             self.screen.fill((0, 0, 0))
-
+            self.events.update()
             self.events.draw(self.screen)
             self.console.draw(self.screen)
 
@@ -37,6 +36,7 @@ class Game:
 
     def resolve_event(self, event):
         self.world.resolve_event(event)
+
 
 def main():
     game = Game()
